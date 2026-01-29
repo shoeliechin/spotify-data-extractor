@@ -23,7 +23,7 @@ def getFilesList(directory):
     """
     if not Path(directory).exists():
         raise ValueError("Directory does not exist")
-    files = [file for file in Path(directory).glob("**/*.json")]
+    files = [Path(file) for file in Path(directory).glob("**/*.json")]
     if len(files) == 0:
         print("Warning: the directory you provided does not contain any files, "
               + "consider checking the path again, or remove the -d flag "
@@ -43,10 +43,9 @@ def getFieldsToExtract(args):
 def extractData(args):
     # Extract file list if needed
     try:
-        files = getFilesList(args.file) if args.directory else [args.file]
+        files = getFilesList(args.file) if args.directory else [Path(args.file)]
     except ValueError:
         print("Error: directory does not exist")
-    print(files)
 
     dataDict = {} # Dictionary for extracted data
     toExtract = getFieldsToExtract(args) # Setup fields to extract
@@ -55,10 +54,11 @@ def extractData(args):
     for file in files:
         # Load json data
         try:
-            with open(file, 'r') as file:
+            with open(file, 'r', encoding='utf-8') as file:
                 data = json.load(file)
         except:
             print(f"Error: the file {file} cannot be opened")
+            continue
 
         # Process each entry
         for entry in data:
